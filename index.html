@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Input</title>
+</head>
+<body>
+    <h1>Data Input</h1>
+    <button onclick="visualizeData()">Visualize Data</button>
+
+    <script>
+        function visualizeData() {
+            // Fetch CSV data from DataList.csv
+            fetch('DataList.csv')
+                .then(response => response.text())
+                .then(inputData => {
+                    // Parse CSV data
+                    const data = parseCSV(inputData);
+
+                    // Get the leftmost column (Interface Identifier) as keys
+                    const keys = data.map(row => row['Interface Identifier']);
+
+                    // Pass the parsed data and keys to the visualization file
+                    localStorage.setItem('inputData', JSON.stringify({ data, keys }));
+
+                    // Open the visualization file in a new window
+                    window.open('visualization.html', '_blank');
+                });
+        }
+
+        // Function to parse CSV data
+        function parseCSV(csvData) {
+            // Split CSV data into rows
+            const rows = csvData.split('\n');
+
+            // Extract headers (column names)
+            const headers = rows[0].split(',');
+
+            // Initialize an array to store the parsed data
+            const parsedData = [];
+
+            // Iterate through rows starting from the second row
+            for (let i = 1; i < rows.length; i++) {
+                const rowData = rows[i].split(',');
+
+                // Initialize an object to store the current row data
+                const currentRow = {};
+
+                // Iterate through headers and assign values to the object
+                for (let j = 0; j < headers.length; j++) {
+                    // Ignore ISP경유
+                    if (headers[j].trim() !== 'ISP경유') {
+                        const destination = rowData[j].trim();
+
+                        // Check if the destination is not empty or 'O'
+                        if (destination && destination !== 'O') {
+                            // Assign a departure and destination pair
+                            currentRow[headers[j].trim()] = destination;
+                        }
+                    }
+                }
+
+                // Push the current row data to the parsed data array
+                parsedData.push(currentRow);
+            }
+
+            return parsedData;
+        }
+    </script>
+</body>
+</html>
